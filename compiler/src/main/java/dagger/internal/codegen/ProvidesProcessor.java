@@ -245,8 +245,8 @@ public final class ProvidesProcessor extends AbstractProcessor {
     for (Object injectableType : injects) {
       TypeMirror typeMirror = (TypeMirror) injectableType;
       String key = CodeGen.isInterface(typeMirror)
-          ? GeneratorKeys.getCodeGeneratedProviderKey(typeMirror)
-          : GeneratorKeys.getCodeGeneratedMembersKey(typeMirror);
+          ? GeneratorKeys.getRuntimeGeneratedProviderKey(typeMirror)
+          : GeneratorKeys.getRuntimeGeneratedMembersKey(typeMirror);
       injectsField.append(key).append(", ");
     }
     injectsField.append("}");
@@ -305,13 +305,13 @@ public final class ProvidesProcessor extends AbstractProcessor {
         Provides provides = providerMethod.getAnnotation(Provides.class);
         switch (provides.type()) {
           case UNIQUE: {
-            String key = GeneratorKeys.getCodeGeneratedProviderKey(providerMethod);
+            String key = GeneratorKeys.getRuntimeGeneratedProviderKey(providerMethod);
             writer.emitStatement("map.put(%s, new %s(module))", key,
                 bindingClassName(providerMethod, methodToClassName, methodNameToNextId));
             break;
           }
           case SET: {
-            String key = GeneratorKeys.getCodeGeneratedElementKey(providerMethod);
+            String key = GeneratorKeys.getRuntimeGeneratedElementKey(providerMethod);
             writer.emitStatement("SetBinding.add(map, %s, new %s(module))", key,
                 bindingClassName(providerMethod, methodToClassName, methodNameToNextId));
             break;
@@ -417,7 +417,7 @@ public final class ProvidesProcessor extends AbstractProcessor {
     writer.emitEmptyLine();
     writer.beginMethod(null, className, PUBLIC, moduleType, "module");
     boolean singleton = providerMethod.getAnnotation(Singleton.class) != null;
-    String key = GeneratorKeys.getCodeGeneratedProviderKey(providerMethod);
+    String key = GeneratorKeys.getRuntimeGeneratedProviderKey(providerMethod);
     String membersKey = null;
     writer.emitStatement("super(%s, %s, %s, %s.class)",
         key, membersKey, (singleton ? "IS_SINGLETON" : "NOT_SINGLETON"),
@@ -433,7 +433,7 @@ public final class ProvidesProcessor extends AbstractProcessor {
       writer.emitAnnotation(SuppressWarnings.class, JavaWriter.stringLiteral("unchecked"));
       writer.beginMethod("void", "attach", PUBLIC, Linker.class.getCanonicalName(), "linker");
       for (VariableElement parameter : parameters) {
-        String parameterKey = GeneratorKeys.getCodeGeneratedProviderKey(parameter);
+        String parameterKey = GeneratorKeys.getRuntimeGeneratedProviderKey(parameter);
         writer.emitStatement("%s = (%s) linker.requestBinding(%s, %s.class)",
             parameterName(parameter),
             writer.compressType(JavaWriter.type(Binding.class,

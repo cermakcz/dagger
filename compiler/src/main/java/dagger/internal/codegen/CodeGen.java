@@ -153,6 +153,67 @@ final class CodeGen {
   };
 
   /**
+   * Returns a code for generating a string for {@code type} in runtime,
+   * which can be used for keys. Primitive types are always boxed.
+   */
+  public static String typeToRuntimeGeneratedKeyString(TypeMirror type) {
+    StringBuilder result = new StringBuilder();
+    typeToRuntimeGeneratedKeyString(type, result, '.');
+    return result.toString();
+  }
+
+  /**
+   * Appends a code for generating a string for {@code type} in runtime,
+   * which can be used for keys, to {@code result}. Primitive types are always boxed.
+   *
+   * @param innerClassSeparator either '.' or '$', which will appear in a
+   *     class name like "java.lang.Map.Entry" or "java.lang.Map$Entry".
+   *     Use '.' for references to existing types in code. Use '$' to define new
+   *     class names and for strings that will be used by runtime reflection.
+   */
+  public static void typeToRuntimeGeneratedKeyString(final TypeMirror type,
+      final StringBuilder result, final char innerClassSeparator) {
+    type.accept(new SimpleTypeVisitor6<Void, Void>() {
+      @Override public Void visitDeclared(DeclaredType declaredType, Void v) {
+        TypeElement typeElement = (TypeElement) declaredType.asElement();
+        CodeGen.rawTypeToString(result, typeElement, innerClassSeparator);
+        result.append(".class.getCanonicalName()");
+        List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
+        if (!typeArguments.isEmpty()) {
+          result.append(" + \"<\" + ");
+          for (int i = 0; i < typeArguments.size(); i++) {
+            if (i != 0) {
+              result.append(" + \" , \" + ");
+            }
+            typeToRuntimeGeneratedKeyString(typeArguments.get(i), result, innerClassSeparator);
+          }
+          result.append(" + \">\"");
+        }
+        return null;
+      }
+      @Override public Void visitPrimitive(PrimitiveType primitiveType, Void v) {
+        result.append(CodeGen.box((PrimitiveType) type).getName());
+        return null;
+      }
+      @Override public Void visitArray(ArrayType arrayType, Void v) {
+        typeToRuntimeGeneratedKeyString(arrayType.getComponentType(), result, innerClassSeparator);
+        result.append(" + \"[]\"");
+        return null;
+      }
+      @Override public Void visitTypeVariable(TypeVariable typeVariable, Void v) {
+        result.append("\"");
+        result.append(typeVariable.asElement().getSimpleName());
+        result.append("\"");
+        return null;
+      }
+      @Override protected Void defaultAction(TypeMirror typeMirror, Void v) {
+        throw new UnsupportedOperationException(
+            "Unexpected TypeKind " + typeMirror.getKind() + " for "  + typeMirror);
+      }
+    }, null);
+  }
+
+  /**
    * Returns the annotation on {@code element} formatted as a Map. This returns
    * a Map rather than an instance of the annotation interface to work-around
    * the fact that Class and Class[] fields won't work at code generation time.
