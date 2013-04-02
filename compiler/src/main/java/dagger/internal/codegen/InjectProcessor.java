@@ -257,10 +257,10 @@ public final class InjectProcessor extends AbstractProcessor {
     writer.emitEmptyLine();
     writer.beginMethod(null, adapterName, PUBLIC);
     String key = (constructor != null)
-        ? GeneratorKeys.getCodeGeneratedProviderKey(type.asType()) + ".class.getCanonicalName()"
+        ? GeneratorKeys.getRuntimeGeneratedProviderKey(type.asType())
         : null;
 
-    String membersKey = GeneratorKeys.getCodeGeneratedMembersKey(type.asType());
+    String membersKey = GeneratorKeys.getRuntimeGeneratedMembersKey(type.asType());
     boolean singleton = type.getAnnotation(Singleton.class) != null;
     writer.emitStatement("super(%s, %s, %s, %s.class)",
         key, membersKey, (singleton ? "IS_SINGLETON" : "NOT_SINGLETON"), strippedTypeName);
@@ -277,7 +277,7 @@ public final class InjectProcessor extends AbstractProcessor {
               parameterName(disambiguateFields, parameter),
               writer.compressType(JavaWriter.type(Binding.class,
                   CodeGen.typeToString(parameter.asType()))),
-		          GeneratorKeys.getCodeGeneratedProviderKey(parameter),
+              GeneratorKeys.getRuntimeGeneratedProviderKey(parameter),
               strippedTypeName);
         }
       }
@@ -286,7 +286,7 @@ public final class InjectProcessor extends AbstractProcessor {
             fieldName(disambiguateFields, field),
             writer.compressType(JavaWriter.type(Binding.class,
                 CodeGen.typeToString(field.asType()))),
-		        GeneratorKeys.getCodeGeneratedProviderKey((VariableElement) field),
+            GeneratorKeys.getRuntimeGeneratedProviderKey((VariableElement) field),
             strippedTypeName);
       }
       if (supertype != null) {
@@ -294,7 +294,7 @@ public final class InjectProcessor extends AbstractProcessor {
             "supertype",
             writer.compressType(JavaWriter.type(Binding.class,
                 CodeGen.rawTypeToString(supertype, '.'))),
-		        GeneratorKeys.getCodeGeneratedMembersKey(supertype),
+            GeneratorKeys.getRuntimeGeneratedMembersKey(supertype),
             strippedTypeName);
       }
       writer.endMethod();
