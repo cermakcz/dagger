@@ -257,7 +257,7 @@ public final class InjectProcessor extends AbstractProcessor {
     writer.emitEmptyLine();
     writer.beginMethod(null, adapterName, PUBLIC);
     String key = (constructor != null)
-        ? GeneratorKeys.get(type.asType()) + ".class.getCanonicalName()"
+        ? GeneratorKeys.getCodeGeneratedProviderKey(type.asType()) + ".class.getCanonicalName()"
         : null;
 
     String membersKey = GeneratorKeys.getCodeGeneratedMembersKey(type.asType());
