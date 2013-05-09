@@ -427,7 +427,7 @@ public final class InjectProcessor extends AbstractProcessor {
           fieldName(false, field),
           writer.compressType(JavaWriter.type(Binding.class,
               CodeGen.typeToString(field.asType()))),
-          JavaWriter.stringLiteral(GeneratorKeys.get((VariableElement) field)),
+		      GeneratorKeys.getRuntimeGeneratedProviderKey((VariableElement) field),
           typeName);
     }
     writer.endMethod();
