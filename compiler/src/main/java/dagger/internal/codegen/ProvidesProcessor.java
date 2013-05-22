@@ -419,9 +419,9 @@ public final class ProvidesProcessor extends AbstractProcessor {
     boolean singleton = providerMethod.getAnnotation(Singleton.class) != null;
     String key = GeneratorKeys.getRuntimeGeneratedProviderKey(providerMethod);
     String membersKey = null;
-    writer.emitStatement("super(%s, %s, %s, %s.class)",
+    writer.emitStatement("super(%s, %s, %s, %s)",
         key, membersKey, (singleton ? "IS_SINGLETON" : "NOT_SINGLETON"),
-        JavaWriter.stringLiteral(moduleType + "." + methodName + "()"));
+        moduleType + ".class + " + JavaWriter.stringLiteral("." + methodName + "()"));
     writer.emitStatement("this.module = module");
     writer.emitStatement("setLibrary(%s)", library);
     writer.endMethod();
